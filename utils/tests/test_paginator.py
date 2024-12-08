@@ -1,5 +1,5 @@
 import pytest
-from utils.paginator import ArrayPaginator, paginate_array
+from utils.paginator import ArrayPaginator, DefaultCursorEncoder, paginate_array
 
 @pytest.fixture
 def items():
@@ -18,11 +18,11 @@ def test_has_previous(items):
     assert not paginator.has_previous
 
 def test_pagination_with_after(items):
-    paginator = ArrayPaginator(items, after="5:6", first=5)
+    paginator = ArrayPaginator(items, after="5", first=5)
     assert paginator.page == list(range(7, 12))
 
 def test_pagination_with_before(items):
-    paginator = ArrayPaginator(items, before="10:11", last=5)
+    paginator = ArrayPaginator(items, before="10", last=5)
     assert paginator.page == list(range(6, 11))
 
 def test_invalid_after_cursor(items):
@@ -59,3 +59,25 @@ def test_paginate_array_function(items):
     connection = paginate_array(items, first=10)
     assert connection.paginator.page == list(range(1, 11))
     assert connection.total_count == 100
+
+def test_using_paginate_array_with_cursor_encoder(items):
+    connection = paginate_array(items, first=10, encode_cursor=True)
+    assert connection.paginator.page == list(range(1, 11))
+    assert connection.total_count == 100
+
+def test_cursor_is_encoded(items):
+    encoder = DefaultCursorEncoder()
+    cursor = encoder.encode(100)
+    assert cursor != 100
+
+def test_cursor_is_decoded(items):
+    encoder = DefaultCursorEncoder()
+    cursor = encoder.encode(100)
+    assert encoder.decode(cursor) == 100
+
+def test_using_encoded_cursor_with_paginate_array(items):
+    connection = paginate_array(items, first=10, encode_cursor=True)
+    # Fetch next page
+    cursor = connection.page_info["end_cursor"]
+    connection = paginate_array(items, after=cursor, first=10, encode_cursor=True)
+    assert connection.paginator.page == list(range(11, 21))
