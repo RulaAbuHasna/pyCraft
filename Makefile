@@ -1,3 +1,8 @@
+# install dependencies
+install:
+	pip install -r requirements.txt
+	pip install ruff
+
 # run linting
 lint:
 	ruff check .

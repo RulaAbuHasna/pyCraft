@@ -1,5 +1,5 @@
 import pytest
-from utils.paginator import ArrayPaginator, DefaultCursorEncoder, paginate_array
+from utils.paginator.array_paginator import ArrayPaginator, DefaultCursorEncoder, paginate_array
 
 @pytest.fixture
 def items():
