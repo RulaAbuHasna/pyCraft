@@ -3,10 +3,10 @@ name: CI Workflow
 on:
   push:
     branches:
-      - main
+      - master
   pull_request:
     branches:
-      - main
+      - master
 
 jobs:
   lint-and-test:
@@ -29,6 +29,10 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           pip install ruff pytest
+
+      # Setup environment variables PYCRAFT_PAGINATOR_SECRET
+      - name: Setup environment variables
+        run: echo "PYCRAFT_PAGINATOR_SECRET=$(openssl rand -hex 16)" >> $GITHUB_ENV
 
       # Run linting
       - name: Run linting
