@@ -75,3 +75,10 @@ def test_cursor_is_decoded():
     encoder = DefaultCursorEncoder()
     cursor = encoder.encode("a")
     assert encoder.decode(cursor) == "a"
+
+def test_using_encoded_cursor_with_random_data_paginate_dict():
+    data = {"a": "leo", "b": "is", "c": "a", "d": "beautiful", "e": "cat"}
+    connection = paginate_dict(data, first=3, encode_cursor=True)
+    cursor = connection.page_info["end_cursor"]
+    connection = paginate_dict(data, after=cursor, first=2, encode_cursor=True)
+    assert connection.paginator.page == {"d": "beautiful", "e": "cat"}
