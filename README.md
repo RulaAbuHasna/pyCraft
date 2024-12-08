@@ -7,3 +7,7 @@ pyCraft is a versatile Python package designed to provide custom functionalities
 ### 1. Paginator
 
 The paginator is a utility that allows you to paginate through a list of items. It supports both forward and backward pagination, and can be used with any iterable.
+
+   1. [Paginator](utils/paginator.py)
+   2. [Tests](utils/tests/test_paginator.py)
+
