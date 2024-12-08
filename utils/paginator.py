@@ -9,19 +9,12 @@ class DefaultCursorEncoder:
         self.secret = secret
         
     def encode(self, position: int) -> str:
-        # XOR with secret bytes for simple reversible encryption
-        key = int.from_bytes(self.secret.encode(), 'big') 
-        encoded = position ^ key
-        return f"{position}:{encoded}"
+        # use the secret to encode the position
+        return str(position + int.from_bytes(self.secret.encode(), 'little'))
 
-    def decode(self, cursor: str) -> int:
-        # Split cursor into original and encrypted parts
-        original, encrypted = cursor.split(':')
-        key = int.from_bytes(self.secret.encode(), 'big')
-        if int(original) ^ key != int(encrypted):
-            raise ValueError("Invalid cursor - encryption verification failed")
-        return int(original)
-
+    def decode(self, cursor: str) -> int:   
+        # use the secret to decode the cursor
+        return int(cursor) - int.from_bytes(self.secret.encode(), 'little')
 
 class CustomCursorEncoder:
     """Custom cursor encoder with user-defined encode/decode functions."""
@@ -54,6 +47,7 @@ class ArrayPaginator:
     ):
         self.data = data
         self.start_index = 0
+        print(f"start_index: {data}")
         self.end_index = len(data)
 
         # Default encoder behavior: no encoding/decoding
@@ -72,11 +66,17 @@ class ArrayPaginator:
 
         # Handle 'after' cursor
         if after is not None:
-            self.start_index = self._decode(after) + 1
+            try:
+                self.start_index = self._decode(after) + 1
+            except ValueError as e:
+                raise ValueError(f"Invalid cursor format: {after}") from e
 
         # Handle 'before' cursor
         if before is not None:
-            self.end_index = min(self.end_index, self._decode(before))
+            try:
+                self.end_index = min(self.end_index, self._decode(before))
+            except ValueError as e:
+                raise ValueError(f"Invalid cursor format: {before}") from e
 
         # Ensure valid bounds
         self.start_index = max(self.start_index, 0)
